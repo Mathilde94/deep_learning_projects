@@ -1,0 +1,18 @@
+# Python Stuff
+*.py[co]
+__pycache__
+
+# data
+data/notMNIST_large/
+data/notMNIST_small/
+*.pickle
+*.tar.gz
+
+
+# notebooks
+*.ipynb
+
+# IDEA
+.idea
+
+
