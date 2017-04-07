@@ -84,9 +84,9 @@ def train_nn():
 def train_conv_nn():
     datasets = load_sets_from_file()
 
-    train_data, train_labels = get_training_set(datasets, size=15000)
-    valid_data, valid_labels = get_validation_set(datasets, size=2000)
-    test_data, test_labels = get_testing_set(datasets, size=2000)
+    train_data, train_labels = get_training_set(datasets, size=60000)
+    valid_data, valid_labels = get_validation_set(datasets, size=12000)
+    test_data, test_labels = get_testing_set(datasets, size=12000)
     del datasets
 
     train_dataset, train_labels = reformat_3d(train_data, train_labels)
@@ -98,7 +98,7 @@ def train_conv_nn():
     print('Test set', test_dataset.shape, test_labels.shape)
 
     classifier = ConvNeuralNetworkClassifier()
-    classifier.run(train_dataset, train_labels, valid_dataset, valid_labels, test_dataset, test_labels)
+    return classifier.run(train_dataset, train_labels, valid_dataset, valid_labels, test_dataset, test_labels)
 
 
 if __name__ == '__main__':
