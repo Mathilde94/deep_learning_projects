@@ -6,10 +6,13 @@ from six.moves import cPickle as pickle
 from .constants import data_root, image_size, num_labels, num_channels
 
 
+def load_from_file(pickle_file):
+    return pickle.load(file(pickle_file))
+
+
 def load_sets_from_file():
     pickle_file = os.path.join(data_root, 'notMMIST-{}.pickle'.format(num_labels))
-    datasets = pickle.load(file(pickle_file))
-    return datasets
+    return load_from_file(pickle_file)
 
 
 def get_sets_of_type(datasets, type='train', size=50):

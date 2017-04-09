@@ -1,4 +1,5 @@
 data_root = './data/'
+saved_sessions_root = './data/saved_sessions/'
 
 url = 'http://commondatastorage.googleapis.com/books1000/'
 
