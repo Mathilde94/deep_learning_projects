@@ -25,32 +25,6 @@ def shuffle_data(seed=133):
     save_sets_to_file(train_dataset, train_labels, test_dataset, test_labels, valid_dataset, valid_labels)
 
 
-def train_conv_nn():
-    datasets = load_sets_from_file()
-
-    train_data, train_labels = get_training_set(datasets, size=15000)
-    valid_data, valid_labels = get_validation_set(datasets, size=2000)
-    test_data, test_labels = get_testing_set(datasets, size=2000)
-    del datasets
-
-    train_dataset, train_labels = reformat_3d(train_data, train_labels)
-    valid_dataset, valid_labels = reformat_3d(valid_data, valid_labels)
-    test_dataset, test_labels = reformat_3d(test_data, test_labels)
-
-    print('Training set', train_dataset.shape, train_labels.shape)
-    print('Validation set', valid_dataset.shape, valid_labels.shape)
-    print('Test set', test_dataset.shape, test_labels.shape)
-
-    start_time = time.time()
-    model = ConvolutionNeuralNetwork()
-    classifier = Classifier(model)
-    classifier.train(train_dataset, train_labels, valid_dataset, valid_labels, test_dataset,
-                     test_labels, save=False, from_disk=False)
-    print("Took (in seconds):", time.time() - start_time)
-    classifier.stats()
-    print('')
-
-
 def train_nn(is_conv=False):
     datasets = load_sets_from_file()
 
