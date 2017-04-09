@@ -10,7 +10,8 @@ data/notMNIST_small/
 
 
 # notebooks
-*.ipynb
+.ipynb_checkpoints/
+*draft*.ipynb
 
 # IDEA
 .idea
