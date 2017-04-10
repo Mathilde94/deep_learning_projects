@@ -4,7 +4,7 @@ import tensorflow as tf
 from data.constants import  num_labels, num_channels
 from model_trainer.constants import classic_batch_size
 
-from .configurations import NeuralNetworkConfiguration, ConvolutionalNeuralNetworkConfiguration
+from .configurations import LogisticRegressionConfiguration, NeuralNetworkConfiguration, ConvolutionalNeuralNetworkConfiguration
 from .helpers import conv2d, maxpool2d
 from .parameters import LayerParameter, ModelParameters
 
@@ -45,11 +45,50 @@ class MLModel:
         return tf.train.GradientDescentOptimizer
 
 
+class LogisticRegression(MLModel):
+
+    hyper_parameters = {
+        'batch_size': 100,
+        'epochs': 400,
+        'display_epochs': 10,
+        'keep_prob': 0.9,
+        'learning_rate': 0.5,
+        'lambda_rate': 0.1,
+        'all_batches': False
+    }
+
+    def _set_configuration(self, configuration):
+        self.configuration = configuration or LogisticRegressionConfiguration
+
+    def populate_train_dataset_variables(self):
+        image_size = self.configuration['image_size']
+        self.parameters.tf_train_dataset = tf.placeholder(
+                tf.float32, shape=(self.batch_size, image_size * image_size))
+        self.parameters.tf_train_labels = tf.placeholder(tf.float32,
+                                                         shape=(self.batch_size, num_labels))
+
+    def populate_model_variables(self, from_disk=False):
+        l = LayerParameter()
+        layer = self.configuration['final_layer']
+        l.weights = tf.Variable(
+            tf.truncated_normal([layer['input_depth'], layer['output_depth']]))
+        l.biases = tf.Variable(tf.zeros([layer['output_depth']]))
+
+        self.parameters.final_layer = l
+
+    def feed_forward(self, data, keep_prob=1.0, _lambda=0.0):
+        layer = self.parameters.final_layer
+        output = tf.matmul(data, layer.weights) + layer.biases
+
+        output += _lambda * (tf.nn.l2_loss(layer.weights) + tf.nn.l2_loss(layer.biases))
+        return output
+
+
 class ConvolutionNeuralNetwork(MLModel):
 
     hyper_parameters = {
         'batch_size': 100,
-        'epochs': 1001,
+        'epochs': 301,  #1001,
         'display_epochs': 50,
         'keep_prob': 0.9,
         'learning_rate': 0.1,
@@ -125,7 +164,7 @@ class NeuralNetwork(MLModel):
 
     hyper_parameters = {
         'batch_size': 128,
-        'epochs': 501,  #10001,
+        'epochs': 501,  # 10001,
         'display_epochs': 50,
         'keep_prob': 0.9,
         'learning_rate': 0.5,

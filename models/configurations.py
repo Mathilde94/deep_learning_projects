@@ -1,6 +1,14 @@
 from data.constants import image_size, num_labels
 
 
+LogisticRegressionConfiguration = {
+    'image_size': image_size,
+    'final_layer': {
+        'input_depth': image_size * image_size,
+        'output_depth': num_labels
+    }
+}
+
 ConvolutionalNeuralNetworkConfiguration = {
     'name': 'convolution_3_layer',
     'convolutional_layers': [

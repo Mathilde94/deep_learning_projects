@@ -90,9 +90,8 @@ class ModelTrainer:
 
                             avg_cost += l / total_batch
                     else:
-                        # TODO: so far only for convolutional networks
                         offset = (step * batch_size) % (train_labels.shape[0] - batch_size)
-                        batch_data = train_dataset[offset:(offset + batch_size), :, :, :]
+                        batch_data = train_dataset[offset:(offset + batch_size), :]  #, :, :]
                         batch_labels = train_labels[offset:(offset + batch_size), :]
 
                         feed_dict = {tf_train_dataset: batch_data, tf_train_labels: batch_labels}
