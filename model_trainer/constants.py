@@ -1,4 +1,4 @@
-classic_batch_size = 100
+classic_batch_size = 128
 epochs = 1001
 display_epochs = 50
 keep_prob = 0.9

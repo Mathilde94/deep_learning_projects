@@ -44,12 +44,18 @@ class MLModel:
     def optimizer(self):
         return tf.train.GradientDescentOptimizer
 
+    def populate_train_dataset_variables(self):
+        image_size = self.configuration['image_size']
+        self.parameters.tf_train_dataset = tf.placeholder(
+                tf.float32, shape=(self.batch_size, image_size * image_size))
+        self.parameters.tf_train_labels = tf.placeholder(tf.float32,
+                                                         shape=(self.batch_size, num_labels))
+
 
 class LogisticRegression(MLModel):
 
     hyper_parameters = {
-        'batch_size': 100,
-        'epochs': 400,
+        'epochs': 100,
         'display_epochs': 10,
         'keep_prob': 0.9,
         'learning_rate': 0.5,
@@ -59,13 +65,6 @@ class LogisticRegression(MLModel):
 
     def _set_configuration(self, configuration):
         self.configuration = configuration or LogisticRegressionConfiguration
-
-    def populate_train_dataset_variables(self):
-        image_size = self.configuration['image_size']
-        self.parameters.tf_train_dataset = tf.placeholder(
-                tf.float32, shape=(self.batch_size, image_size * image_size))
-        self.parameters.tf_train_labels = tf.placeholder(tf.float32,
-                                                         shape=(self.batch_size, num_labels))
 
     def populate_model_variables(self, from_disk=False):
         l = LayerParameter()
@@ -84,10 +83,57 @@ class LogisticRegression(MLModel):
         return output
 
 
+class NeuralNetwork(MLModel):
+
+    hyper_parameters = {
+        'epochs': 301,  # 10001,
+        'display_epochs': 50,
+        'keep_prob': 0.9,
+        'learning_rate': 0.5,
+        'lambda_rate': 0.03,
+        'all_batches': True
+    }
+
+    def _set_configuration(self, configuration):
+        self.configuration = configuration or NeuralNetworkConfiguration
+
+    def populate_model_variables(self, from_disk=False):
+
+        for layer in self.configuration['hidden_layers']:
+            l = LayerParameter()
+
+            l.weights = tf.Variable(tf.random_normal([layer['input'], layer['output']]))
+            l.biases = tf.Variable(tf.random_normal([layer['output']]))
+            self.parameters.hidden_layers.append(l)
+
+        # For the final Layer:
+        l = LayerParameter()
+        input = self.configuration['final_layer']['input']
+        output = self.configuration['final_layer']['output']
+        l.weights = tf.Variable(tf.random_normal([input, output]))
+        l.biases = tf.Variable(tf.random_normal([output]))
+        self.parameters.final_layer = l
+
+    def feed_forward(self, data, keep_prob=1.0, _lambda=0.0):
+        hidden = data
+        for layer in self.parameters.hidden_layers:
+            hidden = tf.add(tf.matmul(hidden, layer.weights), layer.biases)
+            hidden = tf.nn.relu(hidden)
+            hidden = tf.nn.dropout(hidden, keep_prob)
+
+        layer = self.parameters.final_layer
+        hidden = tf.add(tf.matmul(hidden, layer.weights), layer.biases)
+
+        # Adding regularization costs here:
+        output = hidden
+        for layer in self.parameters.hidden_layers + [self.parameters.final_layer]:
+            output += _lambda * (tf.nn.l2_loss(layer.weights) + tf.nn.l2_loss(layer.biases))
+        return output
+
+
 class ConvolutionNeuralNetwork(MLModel):
 
     hyper_parameters = {
-        'batch_size': 100,
         'epochs': 301,  #1001,
         'display_epochs': 50,
         'keep_prob': 0.9,
@@ -158,64 +204,3 @@ class ConvolutionNeuralNetwork(MLModel):
         output = (tf.matmul(hidden, self.parameters.final_layer.weights)
                   + self.parameters.final_layer.biases)
         return output
-
-
-class NeuralNetwork(MLModel):
-
-    hyper_parameters = {
-        'batch_size': 128,
-        'epochs': 501,  # 10001,
-        'display_epochs': 50,
-        'keep_prob': 0.9,
-        'learning_rate': 0.5,
-        'lambda_rate': 0.03,
-        'all_batches': True
-    }
-
-    def _set_configuration(self, configuration):
-        self.configuration = configuration or NeuralNetworkConfiguration
-
-    def populate_train_dataset_variables(self):
-        image_size = self.configuration['image_size']
-        self.parameters.tf_train_dataset = tf.placeholder(
-                tf.float32, shape=(None, image_size * image_size))
-        self.parameters.tf_train_labels = tf.placeholder(tf.float32,
-                                                         shape=(None, num_labels))
-
-    def populate_model_variables(self, from_disk=False):
-
-        for layer in self.configuration['hidden_layers']:
-            l = LayerParameter()
-
-            l.weights = tf.Variable(tf.random_normal([layer['input'], layer['output']]))
-            l.biases = tf.Variable(tf.random_normal([layer['output']]))
-            self.parameters.hidden_layers.append(l)
-
-        # For the final Layer:
-        l = LayerParameter()
-        input = self.configuration['final_layer']['input']
-        output = self.configuration['final_layer']['output']
-        l.weights = tf.Variable(tf.random_normal([input, output]))
-        l.biases = tf.Variable(tf.random_normal([output]))
-        self.parameters.final_layer = l
-
-    def feed_forward(self, data, keep_prob=1.0, _lambda=0.0):
-        hidden = data
-        for layer in self.parameters.hidden_layers:
-            hidden = tf.add(tf.matmul(hidden, layer.weights), layer.biases)
-            hidden = tf.nn.relu(hidden)
-            hidden = tf.nn.dropout(hidden, keep_prob)
-
-        layer = self.parameters.final_layer
-        hidden = tf.add(tf.matmul(hidden, layer.weights), layer.biases)
-
-        # Adding regularization costs here:
-        output = hidden
-        for layer in self.parameters.hidden_layers + [self.parameters.final_layer]:
-            output += _lambda * (tf.nn.l2_loss(layer.weights) + tf.nn.l2_loss(layer.biases))
-        return output
-    #
-    # @property
-    # def optimizer(self):
-    #     return tf.train.AdamOptimizer
-

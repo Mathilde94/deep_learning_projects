@@ -5,10 +5,11 @@ import time
 from data.constants import saved_sessions_root
 from data.generate import build
 from data.load import (get_testing_set, get_training_set, get_validation_set,
-                       load_sets_from_file, reformat, reformat_3d)
+                       load_sets_from_file)
 from models.models import ConvolutionNeuralNetwork, LogisticRegression, NeuralNetwork
 from classifier.helpers import show_stats_from_file
 from classifier.models import Classifier
+from model_trainer.models import DataForTrainer, DataSet
 
 
 def shuffle_data(seed=133):
@@ -25,58 +26,17 @@ def shuffle_data(seed=133):
     save_sets_to_file(train_dataset, train_labels, test_dataset, test_labels, valid_dataset, valid_labels)
 
 
-def train_logistic():
-    datasets = load_sets_from_file()
-
-    train_data, train_labels = get_training_set(datasets, size=15000)
-    valid_data, valid_labels = get_validation_set(datasets, size=3000)
-    test_data, test_labels = get_testing_set(datasets, size=3000)
-    del datasets
-
-    train_dataset, train_labels = reformat(train_data, train_labels)
-    valid_dataset, valid_labels = reformat(valid_data, valid_labels)
-    test_dataset, test_labels = reformat(test_data, test_labels)
-
-    print('Training set', train_dataset.shape, train_labels.shape)
-    print('Validation set', valid_dataset.shape, valid_labels.shape)
-    print('Test set', test_dataset.shape, test_labels.shape)
-
-    start_time = time.time()
+def train_logistic(data_for_trainer):
     model = LogisticRegression()
     classifier = Classifier(model)
-    classifier.train(train_dataset, train_labels, valid_dataset, valid_labels, test_dataset,
-                     test_labels, save=False, from_disk=False, all_batches=False)
-    print("Took (in seconds):", time.time() - start_time)
+    classifier.train(data_for_trainer)
     classifier.stats()
 
 
-def train_nn(is_conv=False):
-    datasets = load_sets_from_file()
-
-    train_data, train_labels = get_training_set(datasets, size=15000)
-    valid_data, valid_labels = get_validation_set(datasets, size=3000)
-    test_data, test_labels = get_testing_set(datasets, size=3000)
-    del datasets
-
-    if not is_conv:
-        train_dataset, train_labels = reformat(train_data, train_labels)
-        valid_dataset, valid_labels = reformat(valid_data, valid_labels)
-        test_dataset, test_labels = reformat(test_data, test_labels)
-    else:
-        train_dataset, train_labels = reformat_3d(train_data, train_labels)
-        valid_dataset, valid_labels = reformat_3d(valid_data, valid_labels)
-        test_dataset, test_labels = reformat_3d(test_data, test_labels)
-
-    print('Training set', train_dataset.shape, train_labels.shape)
-    print('Validation set', valid_dataset.shape, valid_labels.shape)
-    print('Test set', test_dataset.shape, test_labels.shape)
-
-    start_time = time.time()
+def train_nn(data_for_trainer, is_conv=False):
     model = NeuralNetwork() if not is_conv else ConvolutionNeuralNetwork()
     classifier = Classifier(model)
-    classifier.train(train_dataset, train_labels, valid_dataset, valid_labels, test_dataset,
-                     test_labels, save=False, from_disk=False, all_batches=not is_conv)
-    print("Took (in seconds):", time.time() - start_time)
+    classifier.train(data_for_trainer, all_batches=not is_conv)
     classifier.stats()
 
 
@@ -88,19 +48,40 @@ if __name__ == '__main__':
     arguments = sys.argv
     if len(sys.argv) < 2:
         sys.exit('Please specify: python main.py [build|reload|train] [--seed] <seed>')
+
     if arguments[1] == 'build':
         build()
-    if arguments[1] == 'train_conv_nn':
-        train_nn(is_conv=True)
-    if arguments[1] == 'train_nn':
-        train_nn()
-    if arguments[1] == 'train_logistic':
-        train_logistic()
-    if arguments[1] == 'show_stats':
-        show_stats()
+        sys.exit(1)
     elif arguments[1] == 'reload':
         try:
             seed = int(arguments[-1])
             shuffle_data(seed=seed)
         except ValueError, IndexError:
             shuffle_data()
+        sys.exit(1)
+
+    # Get the data for the training
+    datasets = load_sets_from_file()
+    train_set = DataSet(*get_training_set(datasets, size=15000))
+    valid_set = DataSet(*get_validation_set(datasets, size=3000))
+    test_set = DataSet(*get_testing_set(datasets, size=3000))
+    del datasets
+
+    start_time = time.time()
+
+    if arguments[1] == 'train_logistic':
+        data_for_trainer = DataForTrainer(train_set, valid_set, test_set)
+        train_logistic(data_for_trainer)
+
+    elif arguments[1] == 'train_nn_conv':
+        data_for_trainer = DataForTrainer(train_set, valid_set, test_set, with_depth=True)
+        train_nn(data_for_trainer, is_conv=True)
+
+    elif arguments[1] == 'train_nn':
+        data_for_trainer = DataForTrainer(train_set, valid_set, test_set)
+        train_nn(data_for_trainer)
+
+    elif arguments[1] == 'show_stats':
+        show_stats()
+
+    print('Took: {}s.'.format(str(time.time() - start_time)))
