@@ -77,13 +77,8 @@ class Trainer:
         self.steps = []
 
     def set_training_hyper_parameters(self, parameters):
-        # Todo: refactor all that...
-        self.display_epochs = parameters.get('display_epochs', self.display_epochs)
-        self.epochs = parameters.get('epochs', self.epochs)
-        self.lambda_rate = parameters.get('lambda_rate', self.lambda_rate)
-        self.learning_rate = parameters.get('learning_rate', self.learning_rate)
-        self.keep_prob = parameters.get('keep_prob', self.keep_prob)
-        self.batch_size = parameters.get('batch_size', self.batch_size)
+        for param, value in parameters.items():
+            setattr(self, param, value)
 
     def run(self, model, data, from_disk=False, save=False, all_batches=False, session_file=''):
         train_dataset, train_labels, valid_dataset, valid_labels, test_dataset, test_labels = data.get_all_sets()
