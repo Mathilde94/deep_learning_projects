@@ -3,6 +3,8 @@
 __pycache__
 
 # data
+data/saved_sessions/*
+data/saved_models/*
 data/notMNIST_large/
 data/notMNIST_small/
 *.pickle
