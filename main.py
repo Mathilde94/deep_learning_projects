@@ -6,9 +6,10 @@ from data.constants import saved_sessions_root
 from data.generate import build
 from data.load import (get_testing_set, get_training_set, get_validation_set,
                        load_sets_from_file)
-from models.models import ConvolutionNeuralNetwork, LogisticRegression, NeuralNetwork
+from data.text_load import build as text_build
+from models.models import ConvolutionNeuralNetwork, LogisticRegression, NeuralNetwork, Word2Vec
 from classifier.helpers import show_stats_from_file
-from classifier.models import Classifier
+from classifier.models import Classifier, TextClassifier
 from model_trainer.models import DataForTrainer, DataSet
 
 
@@ -44,6 +45,14 @@ def show_stats(name='convolution_3_layer.session-stats.pickle'):
     pickle_file = os.path.join(saved_sessions_root, name)
     show_stats_from_file(pickle_file)
 
+
+def train_text(data, reverse_dictionary):
+    model = Word2Vec()
+    classifier = TextClassifier(model)
+    classifier.train(data, reverse_dictionary)
+    classifier.stats()
+
+
 if __name__ == '__main__':
     arguments = sys.argv
     if len(sys.argv) < 2:
@@ -58,6 +67,10 @@ if __name__ == '__main__':
             shuffle_data(seed=seed)
         except ValueError, IndexError:
             shuffle_data()
+        sys.exit(1)
+    elif arguments[1] == 'train_text':
+        data, reverse_dictionary = text_build()
+        train_text(data, reverse_dictionary)
         sys.exit(1)
 
     # Get the data for the training

@@ -3,7 +3,7 @@ import tensorflow as tf
 from six.moves import cPickle as pickle
 
 from data.load import reformat, reformat_with_depth
-
+from data.text_load import generate_batch
 
 from .constants import (classic_batch_size, display_epochs, epochs,
                         keep_prob, lambda_rate, learning_rate)
@@ -50,13 +50,7 @@ class DataForTrainer:
                 self.validation_set.output, self.test_set.input, self.test_set.output)
 
 
-class Trainer:
-
-    display_epochs = display_epochs
-    epochs = epochs
-    lambda_rate = lambda_rate
-    learning_rate = learning_rate
-    keep_prob = keep_prob
+class BaseTrainer:
     batch_size = classic_batch_size
 
     def __init__(self):
@@ -79,6 +73,36 @@ class Trainer:
     def set_training_hyper_parameters(self, parameters):
         for param, value in parameters.items():
             setattr(self, param, value)
+
+    def save_session(self, session, filename):
+        save_path = self.saver.save(session, filename)
+        print("Session saved in file: %s" % save_path)
+
+    def save_stats(self, filename):
+
+        pickle_file = os.path.join('{}-stats.pickle'.format(filename))
+        try:
+            f = open(pickle_file, 'wb')
+            stats_data = {
+                'steps': self.steps,
+                'losses': self.losses,
+                'accuracies': self.accuracies
+            }
+            pickle.dump(stats_data, f, pickle.HIGHEST_PROTOCOL)
+            f.close()
+            print("Stats saved in : %s" % pickle_file)
+        except Exception as e:
+            print('Unable to save data to', pickle_file, ':', e)
+            raise
+
+
+class Trainer(BaseTrainer):
+
+    display_epochs = display_epochs
+    epochs = epochs
+    lambda_rate = lambda_rate
+    learning_rate = learning_rate
+    keep_prob = keep_prob
 
     def run(self, model, data, from_disk=False, save=False, all_batches=False, session_file=''):
         train_dataset, train_labels, valid_dataset, valid_labels, test_dataset, test_labels = data.get_all_sets()
@@ -175,25 +199,76 @@ class Trainer:
                     self.save_session(session, session_file)
                     self.save_stats(session_file)
 
-    def save_session(self, session, filename):
-        save_path = self.saver.save(session, filename)
-        print("Session saved in file: %s" % save_path)
 
-    def save_stats(self, filename):
+class TextTrainer(BaseTrainer):
 
-        pickle_file = os.path.join('{}-stats.pickle'.format(filename))
-        try:
-            f = open(pickle_file, 'wb')
-            stats_data = {
-                'steps': self.steps,
-                'losses': self.losses,
-                'accuracies': self.accuracies
-            }
-            pickle.dump(stats_data, f, pickle.HIGHEST_PROTOCOL)
-            f.close()
-            print("Stats saved in : %s" % pickle_file)
-        except Exception as e:
-            print('Unable to save data to', pickle_file, ':', e)
-            raise
+    def run(self, model, data, from_disk=False, save=False, all_batches=False, session_file=''):
 
+        graph = tf.Graph()
+        with graph.as_default():
+            model.populate_train_dataset_variables()
+            model.populate_model_variables()
 
+            tf_train_dataset = model.parameters.tf_train_dataset
+            tf_train_labels = model.parameters.tf_train_labels
+            tf_valid_dataset = tf.constant(model.parameters.valid_examples, dtype=tf.int32)
+
+            embed = model.feed_forward(tf_train_dataset)
+            loss = tf.reduce_mean(
+                tf.nn.sampled_softmax_loss(weights=model.softmax_weights, biases=model.softmax_biases,
+                                           inputs=embed, labels=tf_train_labels, num_sampled=self.num_sampled,
+                                           num_classes=model.vocabulary_size))
+            optimizer = model.optimizer(self.learning_rate).minimize(loss)
+
+            # Compute the similarity between minibatch examples and all embeddings.
+            # We use the cosine distance:
+            norm = tf.sqrt(tf.reduce_sum(tf.square(model.embeddings), 1, keep_dims=True))
+            normalized_embeddings = model.embeddings / norm
+            valid_embeddings = tf.nn.embedding_lookup(
+                normalized_embeddings, tf_valid_dataset)
+            similarity = tf.matmul(valid_embeddings, tf.transpose(normalized_embeddings))
+
+            if not from_disk:
+                init = tf.initialize_all_variables()
+
+            self.saver = tf.train.Saver()
+
+            with tf.Session(graph=graph) as session:
+                if not from_disk:
+                    session.run(init)
+                else:
+                    self.saver.restore(session, session_file)
+
+                average_loss = 0
+                for step in range(self.epochs):
+                    batch_data, batch_labels = generate_batch(data, self.batch_size, self.num_skips, self.skip_window)
+                    feed_dict = {tf_train_dataset: batch_data, tf_train_labels: batch_labels}
+                    _, l = session.run([optimizer, loss], feed_dict=feed_dict)
+                    average_loss += l
+                    if step % 2000 == 0:
+                        if step > 0:
+                            average_loss = average_loss / 2000
+                        # The average loss is an estimate of the loss over the last 2000 batches.
+                        print('Average loss at step %d: %f' % (step, average_loss))
+                        self.steps.append(step)
+                        self.losses['minibatch_train'].append(average_loss)
+
+                        average_loss = 0
+                    # note that this is expensive (~20% slowdown if computed every 500 steps)
+                    if step % 10000 == 0:
+                        sim = similarity.eval()
+                        for i in range(model.valid_size):
+                            valid_word = self.reverse_dictionary[model.parameters.valid_examples[i]]
+                            top_k = 8  # number of nearest neighbors
+                            nearest = (-sim[i, :]).argsort()[1:top_k + 1]
+                            log = 'Nearest to %s:' % valid_word
+                            for k in range(top_k):
+                                close_word = self.reverse_dictionary[nearest[k]]
+                                log = '%s %s,' % (log, close_word)
+                            print(log)
+
+                if save:
+                    self.save_session(session, session_file)
+                    self.save_stats(session_file)
+
+                return normalized_embeddings.eval()

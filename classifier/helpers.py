@@ -1,5 +1,7 @@
 import os
 import matplotlib.pyplot as plt
+from matplotlib import pylab
+
 from six.moves import cPickle as pickle
 
 from data.constants import saved_sessions_root
@@ -33,3 +35,13 @@ def show_stats_from_file(filename):
     except Exception as e:
         print("Can not show the stats in fileL ", pickle_file)
         raise e
+
+
+def plot(embeddings, labels):
+    assert embeddings.shape[0] >= len(labels), 'More labels than embeddings'
+    pylab.figure(figsize=(15,15))  # in inches
+    for i, label in enumerate(labels):
+        x, y = embeddings[i,:]
+        pylab.scatter(x, y)
+        pylab.annotate(label, xy=(x, y), xytext=(5, 2), textcoords='offset points',ha='right', va='bottom')
+    pylab.show()

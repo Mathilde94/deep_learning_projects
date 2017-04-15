@@ -1,6 +1,7 @@
 # Python Stuff
 *.py[co]
 __pycache__
+*.zip
 
 # data
 data/saved_sessions/*

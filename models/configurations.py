@@ -1,7 +1,8 @@
 from data.constants import image_size, num_labels
-
+from data.text_load import vocabulary_size
 
 LogisticRegressionConfiguration = {
+    'name': 'logistic_regression',
     'image_size': image_size,
     'final_layer': {
         'input_depth': image_size * image_size,
@@ -58,4 +59,12 @@ NeuralNetworkConfiguration = {
         'output': num_labels
     },
     'image_size': image_size,
+}
+
+Word2VecConfiguration = {
+    'name': 'word_2_vec',
+    'valid_size': 16,
+    'valid_window': 100,
+    'vocabulary_size': vocabulary_size,
+    'embedding_size': 128,
 }
