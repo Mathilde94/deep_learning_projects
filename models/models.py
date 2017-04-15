@@ -8,7 +8,7 @@ from data.constants import num_labels, num_channels
 from model_trainer.constants import classic_batch_size
 
 from .configurations import (LogisticRegressionConfiguration, NeuralNetworkConfiguration,
-                             ConvolutionalNeuralNetworkConfiguration, Word2VecConfiguration)
+                             ConvolutionalNeuralNetworkConfiguration, SkipGramConfiguration)
 from .helpers import conv2d, maxpool2d
 from .parameters import LayerParameter, ModelParameters
 
@@ -211,7 +211,7 @@ class ConvolutionNeuralNetwork(MLModel):
         return output
 
 
-class Word2Vec(MLModel):
+class SkipGram(MLModel):
 
     hyper_parameters = {
         'epochs': 100001,
@@ -220,12 +220,13 @@ class Word2Vec(MLModel):
         'lambda_rate': 0.0,
         'all_batches': True,
         'num_sampled': 64,
+        # TODO: these are more SkipGram model configurations
         'skip_window': 1,
         'num_skips': 2,
     }
 
     def _set_configuration(self, configuration):
-        self.configuration = configuration or Word2VecConfiguration
+        self.configuration = configuration or SkipGramConfiguration
 
     def populate_train_dataset_variables(self):
         valid_window, valid_size = self.valid_window, self.valid_size
@@ -243,6 +244,7 @@ class Word2Vec(MLModel):
         self.softmax_biases = tf.Variable(tf.zeros([self.vocabulary_size]))
 
     def feed_forward(self, data, keep_prob=1.0, _lambda=0.0):
+        # TODO: not really feed forward here
         return tf.nn.embedding_lookup(self.embeddings, data)
 
     @property

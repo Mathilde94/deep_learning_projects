@@ -61,7 +61,7 @@ NeuralNetworkConfiguration = {
     'image_size': image_size,
 }
 
-Word2VecConfiguration = {
+SkipGramConfiguration = {
     'name': 'word_2_vec',
     'valid_size': 16,
     'valid_window': 100,

@@ -7,7 +7,7 @@ from data.generate import build
 from data.load import (get_testing_set, get_training_set, get_validation_set,
                        load_sets_from_file)
 from data.text_load import build as text_build
-from models.models import ConvolutionNeuralNetwork, LogisticRegression, NeuralNetwork, Word2Vec
+from models.models import ConvolutionNeuralNetwork, LogisticRegression, NeuralNetwork, SkipGram
 from classifier.helpers import show_stats_from_file
 from classifier.models import Classifier, TextClassifier
 from model_trainer.models import DataForTrainer, DataSet
@@ -47,7 +47,8 @@ def show_stats(name='convolution_3_layer.session-stats.pickle'):
 
 
 def train_text(data, reverse_dictionary):
-    model = Word2Vec()
+    # skip gram model
+    model = SkipGram()
     classifier = TextClassifier(model)
     classifier.train(data, reverse_dictionary)
     classifier.stats()
