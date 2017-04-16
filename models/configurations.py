@@ -1,5 +1,6 @@
 from data.constants import image_size, num_labels
 from data.text_load import vocabulary_size
+from model_trainer.helpers import vocabulary_size as vocab_size
 
 LogisticRegressionConfiguration = {
     'name': 'logistic_regression',
@@ -67,4 +68,12 @@ SkipGramConfiguration = {
     'valid_window': 100,
     'vocabulary_size': vocabulary_size,
     'embedding_size': 128,
+}
+
+LSTMConfiguration = {
+    'name': 'lstm',
+    'num_nodes': 64,
+    'vocabulary_size': vocab_size,
+    'batch_size': 64,
+    'num_unrollings': 10
 }

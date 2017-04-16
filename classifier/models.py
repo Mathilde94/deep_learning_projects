@@ -1,7 +1,7 @@
 import os
 from sklearn.manifold import TSNE
 
-from model_trainer.models import Trainer, TextTrainer
+from model_trainer.models import LSTMTrainer, Trainer, TextTrainer
 
 from data.constants import saved_sessions_root
 
@@ -68,3 +68,11 @@ class TextClassifier(BaseClassifier):
         two_d_embeddings = tsne.fit_transform(self.final_embeddings[1:num_points + 1, :])
         words = [self.trainer.reverse_dictionary[i] for i in range(1, num_points + 1)]
         plot(two_d_embeddings, words)
+
+
+class LSTMClassifier(BaseClassifier):
+    trainer_class = LSTMTrainer
+
+    def train(self, train_set, valid_set, **kwargs):
+        self.trainer.set_training_hyper_parameters(self.model.hyper_parameters)
+        self.trainer.run(self.model, train_set, valid_set, **self._get_training_options(**kwargs))

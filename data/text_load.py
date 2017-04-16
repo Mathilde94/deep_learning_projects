@@ -1,21 +1,18 @@
 from __future__ import print_function
 import collections
-import math
 import numpy as np
 import os
 import random
 import tensorflow as tf
 import zipfile
-from matplotlib import pylab
 from six.moves import range
 from six.moves.urllib.request import urlretrieve
-from sklearn.manifold import TSNE
 
 
 url = 'http://mattmahoney.net/dc/'
 vocabulary_size = 50000
 data_index = 0
-
+valid_size=1000
 
 def maybe_download(filename, expected_bytes):
     """Download a file if not present, and make sure it's the right size."""
@@ -82,6 +79,13 @@ def generate_batch(data, batch_size, num_skips, skip_window):
     return batch, labels
 
 
+def read_data_as_string(filename):
+    with zipfile.ZipFile(filename) as f:
+        name = f.namelist()[0]
+        data = tf.compat.as_str(f.read(name))
+    return data
+
+
 def build():
     filename = maybe_download('text8.zip', 31344016)
     words = read_data(filename)
@@ -89,3 +93,11 @@ def build():
     del words  # Hint to reduce memory.
     print('data sample:', [reverse_dictionary[di] for di in data[:8]])
     return data, reverse_dictionary
+
+
+def text_build_for_lstm():
+    filename = maybe_download('text8.zip', 31344016)
+    text = read_data_as_string(filename)
+    valid_text = text[:valid_size]
+    train_text = text[valid_size:]
+    return train_text, valid_text

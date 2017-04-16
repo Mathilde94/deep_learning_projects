@@ -1,13 +1,14 @@
+import numpy as np
 import os
 import tensorflow as tf
 from six.moves import cPickle as pickle
 
 from data.load import reformat, reformat_with_depth
-from data.text_load import generate_batch
+from data.text_load import generate_batch, valid_size
 
 from .constants import (classic_batch_size, display_epochs, epochs,
                         keep_prob, lambda_rate, learning_rate)
-from .helpers import accuracy
+from .helpers import accuracy, BatchGenerator, characters, logprob, random_distribution, sample
 
 
 class DataSet:
@@ -272,3 +273,115 @@ class TextTrainer(BaseTrainer):
                     self.save_stats(session_file)
 
                 return normalized_embeddings.eval()
+
+
+class LSTMTrainer(BaseTrainer):
+
+    def run(self, model, train_set, valid_set, all_batches=False, from_disk=False, save=False, session_file=''):
+
+        graph = tf.Graph()
+        with graph.as_default():
+            model.populate_train_dataset_variables()
+            model.populate_model_variables()
+
+            train_batches = BatchGenerator(train_set, model.batch_size, model.num_unrollings)
+            valid_batches = BatchGenerator(valid_set, 1, 1)
+
+            # Unrolled LSTM loop.
+            outputs = list()
+            output = model.parameters.saved_output
+            state = model.parameters.saved_state
+            for i in model.parameters.train_inputs:
+                output, state = model.feed_forward(i, output, state)
+                outputs.append(output)
+
+            # State saving across unrollings.
+            with tf.control_dependencies([model.parameters.saved_output.assign(output),
+                                          model.parameters.saved_state.assign(state)]):
+                # Classifier.
+                o = tf.reshape(tf.pack(outputs, 0), [model.num_unrollings * model.batch_size, model.num_nodes])
+                logits = tf.nn.xw_plus_b(o, model.parameters.w, model.parameters.b)
+                l = tf.reshape(tf.pack(model.parameters.train_labels, 0),
+                               [model.num_unrollings * model.batch_size, model.vocabulary_size])
+                loss = tf.reduce_mean(
+                    tf.nn.softmax_cross_entropy_with_logits(
+                        labels=l, logits=logits))
+
+            # Optimizer.
+            global_step = tf.Variable(0)
+            learning_rate = tf.train.exponential_decay(self.learning_rate, global_step, 5000, 0.1, staircase=True)
+            optimizer = model.optimizer(learning_rate)
+            gradients, v = zip(*optimizer.compute_gradients(loss))
+            gradients, _ = tf.clip_by_global_norm(gradients, 1.25)
+            optimizer = optimizer.apply_gradients(zip(gradients, v), global_step=global_step)
+
+            train_prediction = tf.nn.softmax(logits)
+
+            # Sampling and validation eval: batch 1, no unrolling.
+            sample_input = tf.placeholder(tf.float32, shape=[1, model.vocabulary_size])
+            saved_sample_output = tf.Variable(tf.zeros([1, model.num_nodes]))
+            saved_sample_state = tf.Variable(tf.zeros([1, model.num_nodes]))
+            reset_sample_state = tf.group(
+                saved_sample_output.assign(tf.zeros([1, model.num_nodes])),
+                saved_sample_state.assign(tf.zeros([1, model.num_nodes])))
+            sample_output, sample_state = model.feed_forward(sample_input, saved_sample_output, saved_sample_state)
+            with tf.control_dependencies([saved_sample_output.assign(sample_output),
+                                          saved_sample_state.assign(sample_state)]):
+                sample_prediction = tf.nn.softmax(tf.nn.xw_plus_b(sample_output, model.parameters.w, model.parameters.b))
+
+            if not from_disk:
+                init = tf.initialize_all_variables()
+
+            self.saver = tf.train.Saver()
+
+            with tf.Session(graph=graph) as session:
+                if not from_disk:
+                    session.run(init)
+                else:
+                    self.saver.restore(session, session_file)
+
+                mean_loss = 0
+                for step in range(self.epochs):
+                    batches = train_batches.next()
+                    feed_dict = dict()
+                    for i in range(model.num_unrollings + 1):
+                        feed_dict[model.parameters.train_data[i]] = batches[i]
+                    _, l, predictions, lr = session.run(
+                        [optimizer, loss, train_prediction, learning_rate], feed_dict=feed_dict)
+                    mean_loss += l
+                    if step % self.display_epochs == 0:
+                        if step > 0:
+                            mean_loss = mean_loss / self.display_epochs
+                        # The mean loss is an estimate of the loss over the last few batches.
+                        print(
+                            'Average loss at step %d: %f learning rate: %f' % (step, mean_loss, lr))
+                        mean_loss = 0
+                        labels = np.concatenate(list(batches)[1:])
+                        print('Minibatch perplexity: %.2f' % float(
+                            np.exp(logprob(predictions, labels))))
+                        if step % (self.display_epochs * 10) == 0:
+                            # Generate some samples.
+                            print('=' * 80)
+                            for _ in range(5):
+                                feed = sample(random_distribution())
+                                sentence = characters(feed)[0]
+                                reset_sample_state.run()
+                                for _ in range(79):
+                                    prediction = sample_prediction.eval({sample_input: feed})
+                                    feed = sample(prediction)
+                                    sentence += characters(feed)[0]
+                                print(sentence)
+                            print('=' * 80)
+                        # Measure validation set perplexity.
+                        reset_sample_state.run()
+                        valid_logprob = 0
+                        for _ in range(valid_size):
+                            b = valid_batches.next()
+                            predictions = sample_prediction.eval({sample_input: b[0]})
+                            valid_logprob = valid_logprob + logprob(predictions, b[1])
+                        print('Validation set perplexity: %.2f' % float(np.exp(
+                            valid_logprob / valid_size)))
+
+                if save:
+                    self.save_session(session, session_file)
+                    self.save_stats(session_file)

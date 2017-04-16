@@ -7,9 +7,11 @@ from data.generate import build
 from data.load import (get_testing_set, get_training_set, get_validation_set,
                        load_sets_from_file)
 from data.text_load import build as text_build
-from models.models import ConvolutionNeuralNetwork, LogisticRegression, NeuralNetwork, SkipGram
+from data.text_load import text_build_for_lstm
+from models.models import (ConvolutionNeuralNetwork, LogisticRegression, NeuralNetwork,
+                           SkipGram, LSTM)
 from classifier.helpers import show_stats_from_file
-from classifier.models import Classifier, TextClassifier
+from classifier.models import Classifier, LSTMClassifier, TextClassifier
 from model_trainer.models import DataForTrainer, DataSet
 
 
@@ -54,6 +56,14 @@ def train_text(data, reverse_dictionary):
     classifier.stats()
 
 
+def train_text_lstm(train_set, valid_set):
+    # skip gram model
+    model = LSTM()
+    classifier = LSTMClassifier(model)
+    classifier.train(train_set, valid_set)
+    # classifier.stats()
+
+
 if __name__ == '__main__':
     arguments = sys.argv
     if len(sys.argv) < 2:
@@ -72,6 +82,10 @@ if __name__ == '__main__':
     elif arguments[1] == 'train_text':
         data, reverse_dictionary = text_build()
         train_text(data, reverse_dictionary)
+        sys.exit(1)
+    elif arguments[1] == 'train_text_lstm':
+        train_set, valid_set = text_build_for_lstm()
+        train_text_lstm(train_set, valid_set)
         sys.exit(1)
 
     # Get the data for the training

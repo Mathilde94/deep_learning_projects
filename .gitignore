@@ -20,3 +20,5 @@ data/notMNIST_small/
 .idea
 
 
+.DS_Store*
+

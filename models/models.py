@@ -8,7 +8,8 @@ from data.constants import num_labels, num_channels
 from model_trainer.constants import classic_batch_size
 
 from .configurations import (LogisticRegressionConfiguration, NeuralNetworkConfiguration,
-                             ConvolutionalNeuralNetworkConfiguration, SkipGramConfiguration)
+                             ConvolutionalNeuralNetworkConfiguration, SkipGramConfiguration,
+                             LSTMConfiguration)
 from .helpers import conv2d, maxpool2d
 from .parameters import LayerParameter, ModelParameters
 
@@ -54,6 +55,8 @@ class MLModel:
 
     def _set_configuration_parameters(self):
         for param, value in self.configuration.items():
+            if param == 'batch_size':
+                continue
             setattr(self, param, value)
 
 
@@ -250,3 +253,69 @@ class SkipGram(MLModel):
     @property
     def optimizer(self):
         return tf.train.AdagradOptimizer
+
+
+class LSTM(MLModel):
+
+    hyper_parameters = {
+        'epochs': 10001,
+        'display_epochs': 100,
+        'learning_rate': 10.0,
+        'lambda_rate': 0.0,
+    }
+
+    def _set_configuration(self, configuration):
+        self.configuration = configuration or LSTMConfiguration
+
+    def populate_train_dataset_variables(self):
+        train_data = list()
+        for _ in range(self.num_unrollings + 1):
+            train_data.append(
+                tf.placeholder(tf.float32, shape=[self.batch_size, self.vocabulary_size]))
+        self.parameters.train_data = train_data
+        self.parameters.train_inputs = self.parameters.train_data[:self.num_unrollings]
+        self.parameters.train_labels = self.parameters.train_data[1:]  # labels are inputs shifted by one time step.
+
+    def populate_model_variables(self, from_disk=False):
+        self.parameters.ix = tf.Variable(tf.truncated_normal([self.vocabulary_size, self.num_nodes], -0.1, 0.1))
+        self.parameters.im = tf.Variable(tf.truncated_normal([self.num_nodes, self.num_nodes], -0.1, 0.1))
+        self.parameters.ib = tf.Variable(tf.zeros([1, self.num_nodes]))
+
+        # Forget gate: input, previous output, and bias.
+        self.parameters.fx = tf.Variable(tf.truncated_normal([self.vocabulary_size, self.num_nodes], -0.1, 0.1))
+        self.parameters.fm = tf.Variable(tf.truncated_normal([self.num_nodes, self.num_nodes], -0.1, 0.1))
+        self.parameters.fb = tf.Variable(tf.zeros([1, self.num_nodes]))
+
+        # Memory cell: input, state and bias.
+        self.parameters.cx = tf.Variable(tf.truncated_normal([self.vocabulary_size, self.num_nodes], -0.1, 0.1))
+        self.parameters.cm = tf.Variable(tf.truncated_normal([self.num_nodes, self.num_nodes], -0.1, 0.1))
+        self.parameters.cb = tf.Variable(tf.zeros([1, self.num_nodes]))
+
+        # Output gate: input, previous output, and bias.
+        self.parameters.ox = tf.Variable(tf.truncated_normal([self.vocabulary_size, self.num_nodes], -0.1, 0.1))
+        self.parameters.om = tf.Variable(tf.truncated_normal([self.num_nodes, self.num_nodes], -0.1, 0.1))
+        self.parameters.ob = tf.Variable(tf.zeros([1, self.num_nodes]))
+
+        # Variables saving state across unrollings.
+        self.parameters.saved_output = tf.Variable(tf.zeros([self.batch_size, self.num_nodes]), trainable=False)
+        self.parameters.saved_state = tf.Variable(tf.zeros([self.batch_size, self.num_nodes]), trainable=False)
+
+        # Classifier weights and biases.
+        self.parameters.w = tf.Variable(tf.truncated_normal([self.num_nodes, self.vocabulary_size], -0.1, 0.1))
+        self.parameters.b = tf.Variable(tf.zeros([self.vocabulary_size]))
+
+    def feed_forward(self, i, o, state, keep_prob=1.0, _lambda=0.0):
+        input_gate = (tf.sigmoid(tf.matmul(i, self.parameters.ix) +
+                                 tf.matmul(o, self.parameters.im) + self.parameters.ib))
+
+        forget_gate = (tf.sigmoid(tf.matmul(i, self.parameters.fx) + tf.matmul(o, self.parameters.fm)
+                                  + self.parameters.fb))
+
+        update = tf.matmul(i, self.parameters.cx) + tf.matmul(o, self.parameters.cm) + self.parameters.cb
+
+        state = forget_gate * state + input_gate * tf.tanh(update)
+
+        output_gate = tf.sigmoid(tf.matmul(i, self.parameters.ox) + tf.matmul(o, self.parameters.om)
+                                 + self.parameters.ob)
+
+        return output_gate * tf.tanh(state), state
