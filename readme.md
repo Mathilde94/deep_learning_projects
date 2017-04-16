@@ -1,4 +1,4 @@
-# Machine Learning Models with Tensorflow
+# Learning Machine Learning Models with Tensorflow
 
 This repository contains a set of machine learning models I learnt and tried recently
 after getting the Coursera Machine Learning Certificate with Andrew Ng (great course!)
