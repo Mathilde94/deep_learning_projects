@@ -1,4 +1,4 @@
-# Learning Machine Learning Models with Tensorflow
+# First Exploration on Machine Learning Models with Tensorflow
 
 This repository contains a set of machine learning models I learnt and tried recently
 after getting the Coursera Machine Learning Certificate with Andrew Ng (great course!)
@@ -142,6 +142,8 @@ make sure it is learning and decreasing the loss.
 
  * Generally, having regularization always helped converging faster and avoiding overfitting on training set.
 
+ * Using minibatch method is much faster and still gives good results
+
  * Sometimes, the algorithm would become very very slow to learn after a certain number of steps.
 Hence I introduced a alpha rate that would change over time and got better speed of learning.
 
@@ -158,6 +160,26 @@ On the notMNIST dataset with Neural Networks, I reached **96%** of test accuracy
 (it reached about 93.5% after 20minutes).
 
 The Convolutional Network reaches a **95%** test accuracy in 12 minutes for the NotMNIST dataset.
+
+Output Sample showing cost for :
+```
+Step: 0: l=5.696619 l_valid=36.298420 l_test=35.981113 minibatch=12.5% valid=9.8% test=9.9%
+Step: 50: l=1.236942 l_valid=1.128440 l_test=0.952458 minibatch=68.0% valid=67.9% test=74.8%
+Step: 100: l=0.913848 l_valid=0.709012 l_test=0.490568 minibatch=75.0% valid=80.4% test=86.7%
+Step: 150: l=0.717094 l_valid=0.624215 l_test=0.406925 minibatch=77.3% valid=81.7% test=88.0%
+Step: 200: l=0.770429 l_valid=0.602519 l_test=0.393613 minibatch=78.1% valid=82.2% test=88.7%
+Step: 250: l=0.589795 l_valid=0.570907 l_test=0.357846 minibatch=84.4% valid=82.8% test=90.0%
+Step: 300: l=0.751026 l_valid=0.550192 l_test=0.331506 minibatch=75.0% valid=83.9% test=90.2%
+Step: 350: l=0.718476 l_valid=0.534638 l_test=0.320542 minibatch=76.6% valid=84.0% test=90.8%
+Step: 400: l=0.609484 l_valid=0.517977 l_test=0.302995 minibatch=82.0% valid=84.7% test=91.1%
+Step: 450: l=0.501893 l_valid=0.501924 l_test=0.281929 minibatch=85.2% valid=85.0% test=91.5%
+Step: 500: l=0.455414 l_valid=0.490821 l_test=0.271553 minibatch=86.7% valid=85.4% test=92.1%
+...
+Step: 2800: l=0.318769 l_valid=0.390600 l_test=0.175587 minibatch=89.8% valid=88.4% test=94.9%
+Step: 2850: l=0.294269 l_valid=0.384566 l_test=0.172313 minibatch=90.6% valid=88.6% test=94.8%
+Step: 2900: l=0.232945 l_valid=0.390779 l_test=0.171455 minibatch=91.4% valid=88.7% test=95.0%
+```
+
 
 For SkipGram: some similar words examples are:
 ```
