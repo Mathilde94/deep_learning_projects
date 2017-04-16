@@ -90,9 +90,9 @@ if __name__ == '__main__':
 
     # Get the data for the training
     datasets = load_sets_from_file()
-    train_set = DataSet(*get_training_set(datasets, size=15000))
-    valid_set = DataSet(*get_validation_set(datasets, size=3000))
-    test_set = DataSet(*get_testing_set(datasets, size=3000))
+    train_set = DataSet(*get_training_set(datasets, size=20000))
+    valid_set = DataSet(*get_validation_set(datasets, size=5000))
+    test_set = DataSet(*get_testing_set(datasets, size=5000))
     del datasets
 
     start_time = time.time()

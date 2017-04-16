@@ -146,6 +146,56 @@ I am using a MAC 10.10.8 and ran most of my trainings with around 20K training p
 Neural Network and Convolutional Networks. But sometimes, I would use 60K to 150K datapoints for those algorithms
 to test with my parameters.
 
-On the notMNist Data with Neural Networks, I reached 96% of test accuracy after an hour of running (it reached about 93.5% after 20minutes).
-For the Convolutional Network, after a few minutes, I can reach a 93% accuracy.
 
+## Sample Results on NotMNIST dataset
+
+On the notMNIST dataset with Neural Networks, I reached 96% of test accuracy after an hour of running
+(it reached about 93.5% after 20minutes).
+
+The Convolutional Network reaches a 95% accuracy in 12 minutes.
+
+For SkipGram: some similar words examples are:
+```
+their: its, the, his, any, lossless, supposing, cracking, lou,
+into: to, when, nicomachean, for, as, annihilate, acidosis, in,
+to: into, for, from, would, gretzky, walther, under, disability,
+and: or, of, in, s, references, but, which, at,
+three: zero, eight, four, two, five, intangible, six, haddock,
+during: same, at, copies, on, cleaved, from, pesticide, relay,
+not: exonerated, t, will, they, guilford, which, tammy, nobody,
+would: will, mughals, can, may, should, to, marv, who,
+american: unpleasant, conformity, zangger, national, decrypt, fuck, offense, liberator,
+people: specifies, vietnamese, rubens, villiers, glories, bush, update, foals,
+is: was, has, are, profane, townships, as, by, be,
+have: has, had, be, were, are, cosmonauts, alshehhi, within,
+some: the, these, originally, many, koi, kangaroo, working, this,
+with: in, by, through, for, of, on, from, cw,
+```
+
+For LSTM, it was funny to see how a random text can become more english:
+
+First step gave this snippet:
+```
+nans  bcipu ied evuyogivsdafszhhjywf   gkaahebqjsy  cjn eitj dm u emee hnnas hin
+jgo d  zirvxon qtetqa en gecjdax  iad tdldf gckgv xbnrxnwllqaneex hp htu  nnibta
+edcpyweesanujlnhio tk lytptezj  hjihirtr ninmiarfbd ujmdsb zupe c pu oatr em kzn
+qsce hethdeinshzkwol f ienwc yrgyut rstapiijamz   uceudvq efk cctzjasclvioiajens
+fn ahsto  iilinqa ptf cv e usoegcnsei htbovfclz n y abet oyki lt egqv unzp  a ij
+```
+to become:
+```
+is docker including alfames roses ould to and stating is while on joll the ama t
+ top is finally beroce contract wys both a septess was about orc pafer stitt fem
+haardman sond about one nine two nine three octims gooder ween a port of fourth
+le as five paired community distirlle x of king gaugglean that is notablg leanfi
+d and totes in thet found number invuloted service seem arrian new plased junned
+```
+
+## Next Steps
+Once I have some time, I would love to try the Image Classification on CIR Images!
+
+
+## Articles Read
+ * How I learnt about the Convolutional Networks: http://cs231n.github.io/convolutional-networks/
+ * How I learnt about LSTM: http://colah.github.io/posts/2015-08-Understanding-LSTMs/
+ * How I learnt about Tensorflow: https://www.tensorflow.org/

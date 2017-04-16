@@ -142,7 +142,7 @@ class NeuralNetwork(MLModel):
 class ConvolutionNeuralNetwork(MLModel):
 
     hyper_parameters = {
-        'epochs': 1001,
+        'epochs': 3001,
         'display_epochs': 50,
         'keep_prob': 0.9,
         'learning_rate': 0.1,
