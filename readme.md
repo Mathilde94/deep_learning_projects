@@ -152,7 +152,7 @@ to test with my parameters.
 On the notMNIST dataset with Neural Networks, I reached 96% of test accuracy after an hour of running
 (it reached about 93.5% after 20minutes).
 
-The Convolutional Network reaches a 95% accuracy in 12 minutes.
+The Convolutional Network reaches a 95% accuracy in 12 minutes for the NotMNIST dataset.
 
 For SkipGram: some similar words examples are:
 ```
