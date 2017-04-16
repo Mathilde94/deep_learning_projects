@@ -9,16 +9,16 @@ I also wanted to learn a bit more about Tensorflow and why it is getting more po
 This library is a first hands on it.
 
 This WIP library using Tensorflow can help building:
-   - logistic regression models           (trained on notMnist data)
-   - neural network models                (trained on notMnist data)
-   - convolutional neural network models  (trained on notMnist data)
-   - skip gram models for text            (trained on text8)
-   - long short term memory models        (trained on text8)
+   * logistic regression models           (trained on notMnist data)
+   * neural network models                (trained on notMnist data)
+   * convolutional neural network models  (trained on notMnist data)
+   * skip gram models for text            (trained on text8)
+   * long short term memory models        (trained on text8)
 
 
 ## Getting started
 
-Thanks to a dummy `main.py`, you can run those like this:
+Thanks to a dummy `main.py` and configurations easily editable, you can run those like this:
 
 ```
 python main.py <train_logistic|train_nn|train_nn_conv|train_texttrain_text_lstm>
@@ -42,7 +42,7 @@ The Model class has:
 
  * method to `feed_forward` each input
 
-You have 5 main models inheriting the general `MLModel``: `LogisticRegression`, `NeuralNetwork`,
+You have 5 main models inheriting the general `MLModel`: `LogisticRegression`, `NeuralNetwork`,
 `ConvolutionNeuralNetwork`, `SkipGram`,  `LSTM`.
 
 Example for the Neural Network Model:
@@ -149,10 +149,10 @@ to test with my parameters.
 
 ## Sample Results on NotMNIST dataset
 
-On the notMNIST dataset with Neural Networks, I reached 96% of test accuracy after an hour of running
+On the notMNIST dataset with Neural Networks, I reached **96%** of test accuracy after an hour of running
 (it reached about 93.5% after 20minutes).
 
-The Convolutional Network reaches a 95% accuracy in 12 minutes for the NotMNIST dataset.
+The Convolutional Network reaches a **95%** test accuracy in 12 minutes for the NotMNIST dataset.
 
 For SkipGram: some similar words examples are:
 ```
