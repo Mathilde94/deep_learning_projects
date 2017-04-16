@@ -161,7 +161,7 @@ On the notMNIST dataset with Neural Networks, I reached **96%** of test accuracy
 
 The Convolutional Network reaches a **95%** test accuracy in 12 minutes for the NotMNIST dataset.
 
-Output Sample showing cost for :
+Output Sample showing cost for training, valid and test loss and accuracies :
 ```
 Step: 0: l=5.696619 l_valid=36.298420 l_test=35.981113 minibatch=12.5% valid=9.8% test=9.9%
 Step: 50: l=1.236942 l_valid=1.128440 l_test=0.952458 minibatch=68.0% valid=67.9% test=74.8%
@@ -177,11 +177,11 @@ Step: 500: l=0.455414 l_valid=0.490821 l_test=0.271553 minibatch=86.7% valid=85.
 ...
 Step: 2800: l=0.318769 l_valid=0.390600 l_test=0.175587 minibatch=89.8% valid=88.4% test=94.9%
 Step: 2850: l=0.294269 l_valid=0.384566 l_test=0.172313 minibatch=90.6% valid=88.6% test=94.8%
-Step: 2900: l=0.232945 l_valid=0.390779 l_test=0.171455 minibatch=91.4% valid=88.7% test=95.0%
+Step: 2900: l=0.232945 l_valid=0.390779 l_test=0.171455 minibatch=91.4% valid=88.9% test=95.0%
 ```
 
 
-For SkipGram: some similar words examples are:
+For SkipGram: some similar words examples after a few seconds learning are:
 ```
 their: its, the, his, any, lossless, supposing, cracking, lou,
 into: to, when, nicomachean, for, as, annihilate, acidosis, in,
