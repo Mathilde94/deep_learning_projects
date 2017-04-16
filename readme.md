@@ -16,10 +16,6 @@ This WIP library using Tensorflow can help building:
    - long short term memory models        (trained on text8)
 
 
-Note: Temporary library until I can have some time to improve it :). Some parts of my files
-are from the exercises on the Udacity course (data fetching and text sequences algorithms)
-
-
 ## Getting started
 
 Thanks to a dummy `main.py`, you can run those like this:
@@ -45,6 +41,9 @@ The Model class has:
  as well as Tensorflow variables for its parameters)
 
  * method to `feed_forward` each input
+
+You have 5 main models inheriting the general `MLModel``: `LogisticRegression`, `NeuralNetwork`,
+`ConvolutionNeuralNetwork`, `SkipGram`,  `LSTM`.
 
 Example for the Neural Network Model:
 
@@ -84,6 +83,7 @@ class NeuralNetwork(MLModel):
 ```
 
 The text Models have parts coming from the Udacity Exercises.
+
 
 ### The Trainer
 The Trainer is the second most important object as it will run a model.
@@ -199,3 +199,6 @@ Once I have some time, I would love to try the Image Classification on CIR Image
  * How I learnt about the Convolutional Networks: http://cs231n.github.io/convolutional-networks/
  * How I learnt about LSTM: http://colah.github.io/posts/2015-08-Understanding-LSTMs/
  * How I learnt about Tensorflow: https://www.tensorflow.org/
+
+Note: This is a WIP library until I can have some time to clean and improve it :).
+
