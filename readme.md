@@ -9,11 +9,11 @@ I also wanted to learn a bit more about Tensorflow and why it is getting more po
 This library is a first hands on it.
 
 This WIP library using Tensorflow can help building:
-   * logistic regression models           (trained on notMnist data)
-   * neural network models                (trained on notMnist data)
-   * convolutional neural network models  (trained on notMnist data)
-   * skip gram models for text            (trained on text8)
-   * long short term memory models        (trained on text8)
+ * logistic regression models           (trained on notMnist data)
+ * neural network models                (trained on notMnist data)
+ * convolutional neural network models  (trained on notMnist data)
+ * skip gram models for text            (trained on text8)
+ * long short term memory models        (trained on text8)
 
 
 ## Getting started
