@@ -180,24 +180,8 @@ Step: 2850: l=0.294269 l_valid=0.384566 l_test=0.172313 minibatch=90.6% valid=88
 Step: 2900: l=0.232945 l_valid=0.390779 l_test=0.171455 minibatch=91.4% valid=88.9% test=95.0%
 ```
 
+![Alt text](/images/logistic_regression_stats.png?raw=true "Convolutional Neural Network")
 
-For SkipGram: some similar words examples after a few seconds learning are:
-```
-their: its, the, his, any, lossless, supposing, cracking, lou,
-into: to, when, nicomachean, for, as, annihilate, acidosis, in,
-to: into, for, from, would, gretzky, walther, under, disability,
-and: or, of, in, s, references, but, which, at,
-three: zero, eight, four, two, five, intangible, six, haddock,
-during: same, at, copies, on, cleaved, from, pesticide, relay,
-not: exonerated, t, will, they, guilford, which, tammy, nobody,
-would: will, mughals, can, may, should, to, marv, who,
-american: unpleasant, conformity, zangger, national, decrypt, fuck, offense, liberator,
-people: specifies, vietnamese, rubens, villiers, glories, bush, update, foals,
-is: was, has, are, profane, townships, as, by, be,
-have: has, had, be, were, are, cosmonauts, alshehhi, within,
-some: the, these, originally, many, koi, kangaroo, working, this,
-with: in, by, through, for, of, on, from, cw,
-```
 
 For LSTM, it was funny to see how a random text can become more english:
 
@@ -217,6 +201,32 @@ haardman sond about one nine two nine three octims gooder ween a port of fourth
 le as five paired community distirlle x of king gaugglean that is notablg leanfi
 d and totes in thet found number invuloted service seem arrian new plased junned
 ```
+
+
+For SkipGram: some similar words examples after a few seconds learning are:
+```
+their: its, the, his, any, lossless, supposing, cracking, lou,
+into: to, when, nicomachean, for, as, annihilate, acidosis, in,
+to: into, for, from, would, gretzky, walther, under, disability,
+and: or, of, in, s, references, but, which, at,
+three: zero, eight, four, two, five, intangible, six, haddock,
+during: same, at, copies, on, cleaved, from, pesticide, relay,
+not: exonerated, t, will, they, guilford, which, tammy, nobody,
+would: will, mughals, can, may, should, to, marv, who,
+american: unpleasant, conformity, zangger, national, decrypt, fuck, offense, liberator,
+people: specifies, vietnamese, rubens, villiers, glories, bush, update, foals,
+is: was, has, are, profane, townships, as, by, be,
+have: has, had, be, were, are, cosmonauts, alshehhi, within,
+some: the, these, originally, many, koi, kangaroo, working, this,
+with: in, by, through, for, of, on, from, cw,
+```
+![Alt text](/images/text_graph.png?raw=true "Text Graph")
+
+
+A quick logistic regression training would give an accuracy of 84%. The graph belows
+show the loss decreasing, the training, validation and test accuracies:
+![Alt text](/images/logistic_regression_stats.png?raw=true "Logistic Regression")
+
 
 ## Next Steps
 Once I have some time, I would love to try the Image Classification on CIR Images!

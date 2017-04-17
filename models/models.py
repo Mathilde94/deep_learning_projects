@@ -63,7 +63,7 @@ class MLModel:
 class LogisticRegression(MLModel):
 
     hyper_parameters = {
-        'epochs': 100,
+        'epochs': 2000,
         'display_epochs': 10,
         'keep_prob': 0.9,
         'learning_rate': 0.5,
